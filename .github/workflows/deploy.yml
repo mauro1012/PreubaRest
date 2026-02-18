@@ -1,0 +1,53 @@
+name: CI/CD Pipeline - REST API
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      # PARTE 1: DOCKER
+      - name: Login en Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Construir y Subir imagen Docker
+        uses: docker/build-push-action@v4
+        with:
+          context: ./api
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-notificaciones:latest
+
+      # PARTE 2: TERRAFORM
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          terraform apply -auto-approve \
+            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -var="aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}" \
+            -var="docker_user=${{ secrets.DOCKER_USERNAME }}" \
+            -var="ssh_key_name=${{ secrets.SSH_KEY_NAME }}"
