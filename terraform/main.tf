@@ -12,15 +12,6 @@ terraform {
   }
 }
 
-# 2. Variables
-variable "aws_region" { default = "us-east-1" }
-variable "ssh_key_name" {}
-variable "docker_user" {}
-variable "bucket_logs" { default = "json-rest-mauro28102023" }
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-variable "aws_session_token" {}
-
 # 3. Red por defecto
 data "aws_vpc" "default" { 
   default = true 
