@@ -2,7 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 
 // Si pruebas localmente, usa localhost. En AWS usaremos la IP de la instancia.
-const API_URL = process.env.API_URL || 'http://localhost:3000/api/notificar';
+const API_URL = process.env.API_URL || 'http://rest-api-notif-alb-254053249.us-east-1.elb.amazonaws.com/api/notificar';
 
 const enviarNotificacion = async () => {
     console.log("Iniciando envio de notificacion...");
